@@ -1,17 +1,21 @@
 <template>
   <div id="app">
     <MyCalendar class="scaled-calendar" />
+
   </div>
 </template>
 
 <script>
 import MyCalendar from './components/MyCalendar.vue';
 
+
 export default {
   name: 'App',
   components: {
     MyCalendar
   }
+
+
 };
 </script>
 
@@ -36,4 +40,5 @@ export default {
   transform: scale(1.3); /* 等比例缩小 */
   transform-origin: center; /* 以中心为基准进行缩放 */
 }
+
 </style>
