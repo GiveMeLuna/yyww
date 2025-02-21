@@ -18,6 +18,7 @@
 
 <script>
 import { ref } from 'vue';
+import axios from 'axios';
 
 export default {
   name: 'TodoList',
@@ -25,13 +26,25 @@ export default {
     const newItem = ref(''); // 存储新输入的内容
     const items = ref([]); // 存储列表项
 
-    const addItem = () => {
+    const addItem = async () => {
       // 检查输入内容是否为空
       if (newItem.value.trim() !== '') {
         // 将新输入的内容添加到列表中
         items.value.push({ text: newItem.value, completed: false });
         // 清空输入框
         newItem.value = '';
+
+        // 向后端发送请求，添加数据
+        try {
+          await axios.post('http://localhost:3000/add', {
+            task: '111',
+            completed: true,
+            dueDate: '2025-01-01'
+          });
+          console.log('数据已添加');
+        } catch (error) {
+          console.error('添加数据时出错', error);
+        }
       }
     };
 
