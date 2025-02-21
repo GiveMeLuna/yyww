@@ -30,9 +30,9 @@ export default {
     TodoList
   },
   setup() {
-    const currentDate = ref(new Date());
-    const selectedYear = ref(currentDate.value.getFullYear());
-    const selectedMonth = ref(currentDate.value.getMonth());
+    const currentDate = ref(new Date()); // 当前日期
+    const selectedYear = ref(currentDate.value.getFullYear()); // 选中的年份
+    const selectedMonth = ref(currentDate.value.getMonth()); // 选中的月份
 
     // 计算前后十年的年份数组
     const years = computed(() => {
@@ -40,21 +40,26 @@ export default {
       return Array.from({ length: 21 }, (_, i) => currentYear - 10 + i);
     });
 
+    // 月份数组，中文显示
     const months = ref([
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      '一月', '二月', '三月', '四月', '五月', '六月',
+      '七月', '八月', '九月', '十月', '十一月', '十二月'
     ]);
 
+    // 计算选中月份的天数
     const daysInMonth = computed(() => new Date(selectedYear.value, selectedMonth.value + 1, 0).getDate());
+    // 生成天数数组
     const days = computed(() => Array.from({ length: daysInMonth.value }, (_, i) => i + 1));
 
+    // 更新日历
     const updateCalendar = () => {
       // 触发重新计算天数
     };
 
-    const showTodoList = ref(false);
+    const showTodoList = ref(false); // 控制待办列表的显示
     const selectedDate = ref(''); // 存储选中的日期
 
+    // 打开待办列表
     const openTodoList = (day) => {
       // 根据选中的年、月、日生成日期字符串，并转换为东八区时间
       const date = new Date(selectedYear.value, selectedMonth.value, day);
@@ -62,6 +67,7 @@ export default {
       showTodoList.value = true;
     };
 
+    // 关闭待办列表
     const closeTodoList = () => {
       showTodoList.value = false;
     };
@@ -156,7 +162,7 @@ export default {
 }
 
 .modal-content {
-  /*background: #e2f3f5; /* 修改为淡蓝色背景 */
+  background: #e2f3f5; /* 修改为淡蓝色背景 */
   padding: 20px;
   border-radius: 10px;
   width: 300px; /* 固定宽度 */

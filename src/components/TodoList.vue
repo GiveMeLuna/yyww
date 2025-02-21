@@ -9,7 +9,7 @@
     <ul>
       <li v-for="(item, index) in items" :key="index">
         <input type="checkbox" v-model="item.completed"> <!-- 单选框 -->
-        <span :style="{ textDecoration: item.completed ? 'line-through' : 'none', wordBreak: 'break-all' }">{{ item.text }}</span> <!-- 划线状态，自动换行 -->
+        <span :style="{ textDecoration: item.completed ? 'line-through' : 'none', wordBreak: 'break-all' }">{{ item.task }}</span> <!-- 划线状态，自动换行 -->
         <button @click="removeItem(index)" class="delete-button">删除</button> <!-- 删除按钮 -->
       </li>
     </ul>
@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import axios from 'axios';
 
 export default {
@@ -32,12 +32,29 @@ export default {
     const newItem = ref(''); // 存储新输入的内容
     const items = ref([]); // 存储列表项
 
+    // 获取任务列表
+    const fetchItems = async () => {
+      try {
+        console.log('Fetching items for dueDate:', props.selectedDate); // 打印获取的dueDate值
+        const response = await axios.get('http://localhost:3000/list', {
+          params: { dueDate: props.selectedDate }
+        });
+        items.value = response.data; // 将获取的数据赋值给items
+      } catch (error) {
+        console.error('获取数据时出错', error);
+      }
+    };
+
+    // 监听selectedDate变化，立即获取任务列表
+    watch(() => props.selectedDate, fetchItems, { immediate: true });
+
+    // 添加任务
     const addItem = async () => {
       // 检查输入内容是否为空
       if (newItem.value.trim() !== '') {
         // 将新输入的内容添加到列表中
         const task = newItem.value; // 在清空输入框之前获取输入内容
-        items.value.push({ text: task, completed: false });
+        items.value.push({ task: task, completed: false });
         // 清空输入框
         newItem.value = '';
 
@@ -49,15 +66,29 @@ export default {
             dueDate: new Date(new Date(props.selectedDate).getTime() + 8 * 60 * 60 * 1000).toISOString() // 转换为东八区时间
           });
           console.log('数据已添加');
+          fetchItems(); // 重新获取数据
         } catch (error) {
           console.error('添加数据时出错', error);
         }
       }
     };
 
-    const removeItem = (index) => {
+    // 删除任务
+    const removeItem = async (index) => {
       // 删除指定索引的列表项
+      const item = items.value[index];
       items.value.splice(index, 1);
+
+      // 向后端发送请求，删除数据
+      try {
+        await axios.post('http://localhost:3000/delete', {
+          task: item.task,
+          dueDate: item.dueDate
+        });
+        console.log('数据已删除');
+      } catch (error) {
+        console.error('删除数据时出错', error);
+      }
     };
 
     return {
