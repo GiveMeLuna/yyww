@@ -22,7 +22,13 @@ import axios from 'axios';
 
 export default {
   name: 'TodoList',
-  setup() {
+  props: {
+    selectedDate: {
+      type: String,
+      required: true
+    }
+  },
+  setup(props) {
     const newItem = ref(''); // 存储新输入的内容
     const items = ref([]); // 存储列表项
 
@@ -30,16 +36,17 @@ export default {
       // 检查输入内容是否为空
       if (newItem.value.trim() !== '') {
         // 将新输入的内容添加到列表中
-        items.value.push({ text: newItem.value, completed: false });
+        const task = newItem.value; // 在清空输入框之前获取输入内容
+        items.value.push({ text: task, completed: false });
         // 清空输入框
         newItem.value = '';
 
         // 向后端发送请求，添加数据
         try {
           await axios.post('http://localhost:3000/add', {
-            task: '111',
-            completed: true,
-            dueDate: '2025-01-01'
+            task: task, // 使用之前获取的输入内容
+            completed: false, // 默认未完成
+            dueDate: new Date(new Date(props.selectedDate).getTime() + 8 * 60 * 60 * 1000).toISOString() // 转换为东八区时间
           });
           console.log('数据已添加');
         } catch (error) {

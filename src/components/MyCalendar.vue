@@ -9,12 +9,12 @@
       </select>
     </div>
     <div class="calendar-grid">
-      <div class="day" v-for="day in days" :key="day" @click="openTodoList">{{ day }}</div>
+      <div class="day" v-for="day in days" :key="day" @click="openTodoList(day)">{{ day }}</div>
     </div>
     <div v-if="showTodoList" class="modal">
       <div class="modal-content">
         <button @click="closeTodoList" class="close-button">关闭</button>
-        <TodoList />
+        <TodoList :selectedDate="selectedDate" />
       </div>
     </div>
   </div>
@@ -53,8 +53,12 @@ export default {
     };
 
     const showTodoList = ref(false);
+    const selectedDate = ref(''); // 存储选中的日期
 
-    const openTodoList = () => {
+    const openTodoList = (day) => {
+      // 根据选中的年、月、日生成日期字符串，并转换为东八区时间
+      const date = new Date(selectedYear.value, selectedMonth.value, day);
+      selectedDate.value = new Date(date.getTime() + 8 * 60 * 60 * 1000).toISOString();
       showTodoList.value = true;
     };
 
@@ -71,7 +75,8 @@ export default {
       updateCalendar,
       showTodoList,
       openTodoList,
-      closeTodoList
+      closeTodoList,
+      selectedDate // 返回选中的日期
     };
   }
 };
