@@ -7,8 +7,8 @@
     </div>
     <!-- 动态列表 -->
     <ul>
-      <li v-for="(item, index) in items" :key="index">
-        <input type="checkbox" v-model="item.completed"> <!-- 单选框 -->
+      <li v-for="(item, index) in items" :key="item._id">
+        <input type="checkbox" v-model="item.completed" @change="updateItem(item)"> <!-- 单选框 -->
         <span :style="{ textDecoration: item.completed ? 'line-through' : 'none', wordBreak: 'break-all' }">{{ item.task }}</span> <!-- 划线状态，自动换行 -->
         <button @click="removeItem(index)" class="delete-button">删除</button> <!-- 删除按钮 -->
       </li>
@@ -39,7 +39,7 @@ export default {
         const response = await axios.get('http://localhost:3000/list', {
           params: { dueDate: props.selectedDate }
         });
-        items.value = response.data; // 将获取的数据赋值给items
+        items.value = response.data; // 将获取的数据赋值给items，包括_id
       } catch (error) {
         console.error('获取数据时出错', error);
       }
@@ -73,6 +73,19 @@ export default {
       }
     };
 
+    // 更新任务
+    const updateItem = async (item) => {
+      try {
+        await axios.post('http://localhost:3000/update', {
+          idtime: item.idtime, // 使用idtime匹配任务
+          completed: item.completed
+        });
+        console.log('数据已更新');
+      } catch (error) {
+        console.error('更新数据时出错', error);
+      }
+    };
+
     // 删除任务
     const removeItem = async (index) => {
       // 删除指定索引的列表项
@@ -95,6 +108,7 @@ export default {
       newItem,
       items,
       addItem,
+      updateItem,
       removeItem
     };
   }

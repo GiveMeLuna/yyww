@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 const express = require('express');
 const cors = require('cors'); // 添加CORS支持
 const bodyParser = require('body-parser');
@@ -24,7 +24,8 @@ async function run() {
       const newDocument = {
         task,
         completed,
-        dueDate: new Date(dueDate) // 将dueDate转换为Date对象
+        dueDate: new Date(dueDate), // 将dueDate转换为Date对象
+        idtime: new Date().getTime() // 添加idtime字段，内容为当前时间的毫秒数
       };
       await collection.insertOne(newDocument); // 插入新任务到集合中
       res.send('Document inserted'); // 返回成功消息
@@ -33,21 +34,37 @@ async function run() {
     // 获取任务的API，根据是否提供dueDate参数来决定查询所有任务还是查询匹配dueDate的任务
     app.get('/list', async (req, res) => {
       const { dueDate } = req.query; // 从查询参数中获取dueDate
-      console.log('Received dueDate:', dueDate); // 打印传入的dueDate的值
       let query = {};
       if (dueDate) {
         const dueDateOnly = new Date(dueDate).toISOString().split('T')[0]; // 截取日期部分
-        console.log('Formatted dueDate:', dueDateOnly); // 打印格式化后的dueDate
         query = {
           $expr: {
             $eq: [{ $substr: ['$dueDate', 0, 10] }, dueDateOnly] // 使用表达式截取数据库中dueDate的日期部分进行匹配
           }
         };
       }
-      console.log('Query:', query); // 打印查询条件
       const documents = await collection.find(query).toArray(); // 查询任务
-      console.log('Documents:', documents); // 打印查询结果
       res.json(documents); // 返回任务列表
+    });
+
+    // 更新任务的API
+    app.post('/update', async (req, res) => {
+      const { idtime, completed } = req.body; // 从请求体中获取任务数据
+      console.log('Received idtime:', idtime); // 打印传入的idtime的值
+      console.log('Received completed:', completed); // 打印传入的completed的值
+      const result = await collection.updateOne(
+        { idtime }, // 使用idtime匹配任务
+        { $set: { completed } } // 更新completed字段
+      );
+      console.log('Update result:', result); // 打印更新结果
+      res.send('Document updated'); // 返回成功消息
+    });
+
+    // 删除任务的API
+    app.post('/delete', async (req, res) => {
+      const { task, dueDate } = req.body; // 从请求体中获取任务数据
+      await collection.deleteOne({ task, dueDate: new Date(dueDate) }); // 删除匹配的任务
+      res.send('Document deleted'); // 返回成功消息
     });
 
     // 启动服务器
